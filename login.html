@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Chat Contents Graph</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+    <h1>Chat Contents Graph</h1>
+    <canvas id="myChart"></canvas>
+
+    <script>
+        fetch('chat.txt')
+            .then(response => response.text())
+            .then(data => {
+                const lines = data.split('\n');
+                const nameToCounts = {};
+
+                lines.forEach(line => {
+                    const nameStart = line.indexOf('[') + 1;
+                    const nameEnd = line.indexOf(']');
+                    const name = line.substring(nameStart, nameEnd);
+                    const timeStart = line.indexOf('[', nameEnd + 1) + 1;
+                    const timeEnd = line.indexOf(']', timeStart);
+                    const time = line.substring(timeStart, timeEnd);
+                    const content = line.substring(timeEnd + 1);
+
+                    const timestamp = new Date(time).getTime();
+
+                    if (!isNaN(timestamp)) {
+                        if (!(name in nameToCounts)) {
+                            nameToCounts[name] = [];
+                        }
+                        nameToCounts[name].push({ x: timestamp, y: 1, content });
+                    }
+                });
+
+                const chartData = {
+                    datasets: Object.entries(nameToCounts).map(([name, counts]) => ({
+                        label: name,
+                        data: counts,
+                        fill: false,
+                        borderColor: `#${Math.floor(Math.random() * 16777215).toString(16)}`,
+                        tension: 0.1
+                    }))
+                };
+        
+                const chartOptions = {
+                    scales: {
+                        x: {
+                            type: 'time',
+                            time: {
+                                unit: 'day'
+                            }
+                        },
+                        y: {
+                            ticks: {
+                                stepSize: 1
+                            }
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: (context) => {
+                                    const data = context.dataset.data[context.dataIndex];
+                                    return data.content;
+                                }
+                            }
+                        }
+                    }
+                };
+
+                const chart = new Chart('myChart', {
+                    type: 'line',
+                    data: chartData,
+                    options: chartOptions
+                });
+            });
+    </script>
+</body>
+
+</html>
