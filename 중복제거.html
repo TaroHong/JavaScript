@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+  <meta charset="UTF-8">
+  <title>중복 제거기</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f8f9fa;
+      padding: 40px;
+      color: #333;
+      max-width: 800px;
+      margin: auto;
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 30px;
+      color: #2c3e50;
+    }
+
+    textarea {
+      width: 100%;
+      height: 120px;
+      padding: 10px;
+      font-size: 14px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      resize: vertical;
+      box-sizing: border-box;
+      margin-bottom: 20px;
+    }
+
+    .buttons {
+      text-align: center;
+    }
+
+    button {
+      background-color: #2d89ef;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      margin: 0 10px;
+      font-size: 14px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+    }
+
+    button:hover {
+      background-color: #1b5fa7;
+    }
+
+    .output-container {
+      margin-top: 30px;
+      max-height: 300px;
+      overflow-y: auto;
+      background: #fdfdfd;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      padding: 15px;
+      font-family: monospace;
+      white-space: pre-wrap;
+    }
+
+    .status {
+      text-align: center;
+      font-size: 13px;
+      color: #666;
+      margin-top: 10px;
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+
+<body>
+
+  <h2>✨ 중복 제거기</h2>
+
+  <textarea id="input" placeholder="예: 1,2,3,4,2,3,5... 숫자들을 쉼표로 구분해서 입력하세요"></textarea>
+
+  <div class="buttons">
+    <button onclick="removeDuplicates()">중복 제거</button>
+    <button onclick="copyToClipboard()">복사</button>
+  </div>
+
+  <div class="output-container" id="output"></div>
+  <div class="status" id="status"></div>
+
+  <script>
+    function removeDuplicates() {
+      const input = document.getElementById('input').value;
+      const items = input.split(',').map(s => s.trim()).filter(s => s !== '');
+      const totalCount = items.length;
+
+      const countMap = {};
+      for (const item of items) {
+        countMap[item] = (countMap[item] || 0) + 1;
+      }
+
+      const uniqueItems = Object.keys(countMap);
+      const uniqueSorted = uniqueItems.sort((a, b) => Number(a) - Number(b));
+      const uniqueCount = uniqueItems.length;
+
+      const duplicates = uniqueItems.filter(item => countMap[item] > 1);
+      const duplicateCount = duplicates.length;
+
+      const lines = [];
+      for (let i = 0; i < uniqueSorted.length; i += 10) {
+        lines.push(uniqueSorted.slice(i, i + 10).join(', '));
+      }
+
+      document.getElementById('output').textContent = lines.join(',\n');
+
+      let statusMsg = `총 ${totalCount}개 입력, 중복 제거 후 ${uniqueCount}개`;
+      if (duplicateCount > 0) {
+        statusMsg += `\n중복된 값 (${duplicateCount}개): ${duplicates.join(', ')}`;
+      } else {
+        statusMsg += `\n중복된 값 없음`;
+      }
+
+      document.getElementById('status').textContent = statusMsg;
+    }
+
+    function copyToClipboard() {
+      const outputText = document.getElementById('output').textContent;
+      navigator.clipboard.writeText(outputText).then(() => {
+        const now = new Date();
+        const time = now.toLocaleTimeString('ko-KR', { hour12: false });
+        document.getElementById('status').textContent += `\n📋 복사 완료 (${time})`;
+      }).catch(err => {
+        document.getElementById('status').textContent += `\n❌ 복사 실패: ${err}`;
+      });
+    }
+  </script>
+
+</body>
+
+</html>
